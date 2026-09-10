@@ -1,0 +1,182 @@
+{
+  "geometry": {
+    "height": 3.0,
+    "source_distance": 5.0,
+    "receiver_distance": 10.0,
+    "wedge_deg": 360.0
+  },
+  "path_difference_m": 0.3320274625336168,
+  "a_weighted_db": 18.729527482214902,
+  "bands": [
+    {
+      "centre": 50.0,
+      "insertion_loss_db": 7.487452158081008,
+      "barrier_level_db": -31.009277339194632,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 63.0,
+      "insertion_loss_db": 8.03822318316354,
+      "barrier_level_db": -31.56004836427716,
+      "free_level_db": -23.521825181113623
+    },
+    {
+      "centre": 80.0,
+      "insertion_loss_db": 8.639258211077575,
+      "barrier_level_db": -32.1610833921912,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 100.0,
+      "insertion_loss_db": 9.232728682275896,
+      "barrier_level_db": -32.75455386338952,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 125.0,
+      "insertion_loss_db": 9.859762216587322,
+      "barrier_level_db": -33.38158739770095,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 160.0,
+      "insertion_loss_db": 10.595009466458237,
+      "barrier_level_db": -34.116834647571864,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 200.0,
+      "insertion_loss_db": 11.298607715628853,
+      "barrier_level_db": -34.820432896742474,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 250.0,
+      "insertion_loss_db": 12.039571556002535,
+      "barrier_level_db": -35.56139673711616,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 315.0,
+      "insertion_loss_db": 12.84555769247765,
+      "barrier_level_db": -36.367382873591275,
+      "free_level_db": -23.521825181113623
+    },
+    {
+      "centre": 400.0,
+      "insertion_loss_db": 13.717692830594462,
+      "barrier_level_db": -37.239518011708086,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 500.0,
+      "insertion_loss_db": 14.565001031226856,
+      "barrier_level_db": -38.08682621234048,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 630.0,
+      "insertion_loss_db": 15.471710947570196,
+      "barrier_level_db": -38.99353612868382,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 800.0,
+      "insertion_loss_db": 16.43513446275876,
+      "barrier_level_db": -39.95695964387239,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 1000.0,
+      "insertion_loss_db": 17.354406895732996,
+      "barrier_level_db": -40.87623207684662,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 1250.0,
+      "insertion_loss_db": 18.288152831696717,
+      "barrier_level_db": -41.80997801281034,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 1600.0,
+      "insertion_loss_db": 19.333649595360047,
+      "barrier_level_db": -42.85547477647367,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 2000.0,
+      "insertion_loss_db": 20.286785597265474,
+      "barrier_level_db": -43.8086107783791,
+      "free_level_db": -23.521825181113623
+    },
+    {
+      "centre": 2500.0,
+      "insertion_loss_db": 21.245231267284638,
+      "barrier_level_db": -44.76705644839826,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 3150.0,
+      "insertion_loss_db": 22.241713694680882,
+      "barrier_level_db": -45.76353887579451,
+      "free_level_db": -23.521825181113623
+    },
+    {
+      "centre": 4000.0,
+      "insertion_loss_db": 23.274439868090337,
+      "barrier_level_db": -46.79626504920396,
+      "free_level_db": -23.521825181113623
+    },
+    {
+      "centre": 5000.0,
+      "insertion_loss_db": 24.240698550313553,
+      "barrier_level_db": -47.76252373142718,
+      "free_level_db": -23.521825181113623
+    },
+    {
+      "centre": 6300.0,
+      "insertion_loss_db": 25.24251788564459,
+      "barrier_level_db": -48.764343066758215,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 8000.0,
+      "insertion_loss_db": 26.278785833218695,
+      "barrier_level_db": -49.80061101433232,
+      "free_level_db": -23.521825181113627
+    },
+    {
+      "centre": 10000.0,
+      "insertion_loss_db": 27.24716243359048,
+      "barrier_level_db": -50.7689876147041,
+      "free_level_db": -23.521825181113627
+    }
+  ],
+  "maekawa_db": [
+    6.547124018100327,
+    6.891417471983949,
+    7.312982468835658,
+    7.77232604999849,
+    8.29852795970821,
+    8.960226980050003,
+    9.629142641328183,
+    10.36151305397178,
+    11.180456831752217,
+    12.082308545610218,
+    12.965833755650038,
+    13.91274467861766,
+    14.915701389561155,
+    15.867131541977678,
+    16.827123738351542,
+    17.894655327897432,
+    18.862100278935216,
+    19.830579373011247,
+    20.834076014436576,
+    21.871512587830605,
+    22.840600470318076,
+    23.844303430863018,
+    24.881797420587112,
+    25.850897508318536
+  ]
+}

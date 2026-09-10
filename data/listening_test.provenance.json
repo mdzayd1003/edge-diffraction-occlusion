@@ -1,0 +1,6 @@
+{
+  "source": "simulated",
+  "generator": "diffraction.listening.simulate_ratings",
+  "seed": 0,
+  "note": "Not collected from listeners. Replace with a real study before citing any of it."
+}
