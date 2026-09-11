@@ -87,6 +87,14 @@ tr:last-child td{border-bottom:none}
 mark{background:color-mix(in srgb,var(--brass) 26%,transparent);color:inherit;padding:1px 2px}
 mark.sig{background:color-mix(in srgb,var(--signal) 24%,transparent)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.stage { margin: 0 0 26px; }
+.stage > div { line-height: 0; border: 1px solid var(--rule); background: #0B131B; }
+.stage svg { display: block; width: 100%; height: auto; }
+.stage figcaption {
+  margin-top: 9px; font-family: var(--mono); font-size: 11.5px; line-height: 1.6;
+  color: var(--ink-3); max-width: 78ch;
+}
 </style>
 </head>
 <body>
@@ -108,6 +116,13 @@ mark.sig{background:color-mix(in srgb,var(--signal) 24%,transparent)}
   slider and the third-octave insertion-loss spectrum recomputes — no server, no
   precomputed lookup. Maekawa's empirical chart is drawn alongside as an independent
   reference.</p>
+
+  <figure class="stage">
+    <div id="scene"></div>
+    <figcaption>Side view, drawn to scale. The direct path is blocked; sound reaches the
+    receiver by bending over the edge. Shading marks the geometric shadow — everything
+    below the boundary ray from the source across the edge.</figcaption>
+  </figure>
 
   <div class="readout">
     <div><div class="k">A-weighted</div><div class="v brass" id="aw">—</div></div>
@@ -132,7 +147,6 @@ mark.sig{background:color-mix(in srgb,var(--signal) 24%,transparent)}
         <input type="range" id="r_rh" min="0.2" max="6" step="0.1" value="1.5"></div>
       <div class="ctl"><label>Wedge angle <b id="v_ang">360°</b></label>
         <input type="range" id="r_ang" min="200" max="360" step="5" value="360"></div>
-      <div id="scene" class="plotbox" style="padding:4px"></div>
       <p class="note" id="bad" hidden><b>Outside the wedge.</b> At this angle the receiver
       would be inside the barrier. Raise the wedge angle or lower the receiver.</p>
     </div>
@@ -304,22 +318,87 @@ function draw(il, mae, g) {
 }
 
 function scene(g) {
-  const W=380,H=190,gy=150,bx=190;
-  const sc=Math.min(150/Math.max(P.sd,1), 150/Math.max(P.rd,1), 14);
-  const sx=bx-P.sd*sc, rx=bx+P.rd*sc;
-  const hy=gy-P.h*sc*1.6, szy=gy-P.sh*sc*1.6, rzy=gy-P.rh*sc*1.6;
-  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-  const SX=clamp(sx,16,bx-8), RX=clamp(rx,bx+8,W-16);
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Side view of the source, barrier and receiver.">
-    <line x1="0" y1="${gy}" x2="${W}" y2="${gy}" stroke="#26343F" stroke-width="2"/>
-    <line x1="${bx}" y1="${gy}" x2="${bx}" y2="${clamp(hy,14,gy)}" stroke="#7E8D99" stroke-width="5" stroke-linecap="round"/>
-    <path d="M ${SX} ${szy} L ${bx} ${clamp(hy,14,gy)} L ${RX} ${rzy}" fill="none" stroke="#C08828" stroke-width="2" stroke-dasharray="5 4"/>
-    <line x1="${SX}" y1="${szy}" x2="${RX}" y2="${rzy}" stroke="${g.shadowed?'#3C4A57':'#5A97E0'}" stroke-width="1.5" stroke-dasharray="${g.shadowed?'2 4':'0'}"/>
-    <circle cx="${SX}" cy="${szy}" r="5" fill="#C08828"/><circle cx="${RX}" cy="${rzy}" r="5" fill="#5A97E0"/>
-    <g font-family="IBM Plex Mono,monospace" font-size="11" fill="#8A98A5">
-      <text x="${SX}" y="${szy-11}" text-anchor="middle">source</text>
-      <text x="${RX}" y="${rzy-11}" text-anchor="middle">receiver</text>
-      <text x="${bx+7}" y="${clamp(hy,20,gy)-6}">${P.h.toFixed(1)} m</text></g>
+  // Side elevation in world metres. Distances run to 100 m while heights stay
+  // under 8, so the vertical axis is exaggerated and the factor is printed —
+  // a section drawn at true aspect would be a flat line and say nothing.
+  const W=1100, H=430, L=78, R=64, T=46, B=62;
+  const sd=P.sd, rd=P.rd, h=P.h, sh=P.sh, rh=P.rh;
+  const x0=-sd*1.10, x1=rd*1.10, yMax=Math.max(h,sh,rh)*1.42;
+  const kx=(W-L-R)/(x1-x0), ky=(H-T-B)/yMax;
+  const X=m=>L+(m-x0)*kx, Y=m=>H-B-m*ky;
+  const ex=X(0), ey=Y(h), gy=Y(0);
+  const sx=X(-sd), sy=Y(sh), rx=X(rd), ry=Y(rh);
+  const vex=(ky/kx);
+
+  // Shadow boundary: the ray from the source across the edge, extended to the frame.
+  const dx=0-(-sd), dy=h-sh, t=(W-R+40-ex)/(dx*kx);
+  const bxEnd=ex+(W-R+40-ex), byEnd=ey+(dy*ky*-1)*((W-R+40-ex)/(dx*kx));
+  const shadeY=Math.min(Math.max(byEnd,T-40), H);
+
+  const arcs=[];
+  for (let i=1;i<=5;i++){
+    const rr=i*(Math.hypot(sd,Math.abs(h-sh))*kx)/3.2;
+    arcs.push(`<circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="${rr.toFixed(1)}" fill="none" stroke="#C08828" stroke-width="1" opacity="${(0.46-i*0.072).toFixed(3)}"/>`);
+  }
+
+  const dim=(xa,xb,yy,label)=>`
+    <g stroke="#3C4A57" stroke-width="1" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="#7E8D99">
+      <line x1="${xa}" y1="${yy}" x2="${xb}" y2="${yy}"/>
+      <line x1="${xa}" y1="${yy-4}" x2="${xa}" y2="${yy+4}"/>
+      <line x1="${xb}" y1="${yy-4}" x2="${xb}" y2="${yy+4}"/>
+      <text x="${(xa+xb)/2}" y="${yy-7}" text-anchor="middle" stroke="none">${label}</text>
+    </g>`;
+
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Side elevation: source at ${sh.toFixed(1)} m, a ${h.toFixed(1)} m barrier, receiver ${rd} m beyond it at ${rh.toFixed(1)} m. The direct path is blocked and the sound bends over the edge.">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0B131B"/><stop offset="1" stop-color="#16212C"/>
+      </linearGradient>
+      <clipPath id="lit"><polygon points="${L-40},${T-40} ${ex},${T-40} ${ex},${ey} ${W-R+40},${byEnd} ${W-R+40},${T-40} ${W-R+40},${T-40} ${L-40},${T-40}"/></clipPath>
+      <clipPath id="frame"><rect x="0" y="0" width="${W}" height="${gy}"/></clipPath>
+    </defs>
+
+    <rect x="0" y="0" width="${W}" height="${H}" fill="url(#sky)"/>
+
+    <g clip-path="url(#frame)">
+      <polygon points="${ex},${ey} ${W},${byEnd} ${W},${gy} ${ex},${gy}" fill="#4E8FD8" opacity="0.13"/>
+      <g clip-path="url(#lit)">${arcs.join('')}</g>
+    </g>
+
+    <line x1="${ex}" y1="${ey}" x2="${W-R+40}" y2="${byEnd}" stroke="#5A97E0" stroke-width="1" stroke-dasharray="3 5" opacity="0.55"/>
+    <text x="${W-R-4}" y="${Math.min(byEnd+16,gy-8)}" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="#4E6A88">shadow boundary</text>
+
+    <rect x="0" y="${gy}" width="${W}" height="${H-gy}" fill="#0E1720"/>
+    <line x1="0" y1="${gy}" x2="${W}" y2="${gy}" stroke="#33424F" stroke-width="1.5"/>
+
+    <rect x="${ex-6}" y="${ey}" width="12" height="${gy-ey}" fill="#46545F"/>
+    <rect x="${ex-6}" y="${ey}" width="12" height="3" fill="#8A98A5"/>
+
+    <line x1="${sx}" y1="${sy}" x2="${rx}" y2="${ry}" stroke="#46545F" stroke-width="1.4" stroke-dasharray="3 4"/>
+    <g transform="translate(${ex},${(sy+ry)/2 > ey ? (sy+(ry-sy)*((ex-sx)/(rx-sx))) : ey+26})">
+      <circle r="8.5" fill="#0B131B" stroke="#7A4040" stroke-width="1.2"/>
+      <path d="M-4,-4 L4,4 M4,-4 L-4,4" stroke="#B4595A" stroke-width="1.6"/>
+    </g>
+
+    <path d="M ${sx} ${sy} L ${ex} ${ey} L ${rx} ${ry}" fill="none" stroke="#C08828" stroke-width="2.6" stroke-linejoin="round"/>
+
+    <circle cx="${sx}" cy="${sy}" r="6.5" fill="#C08828" stroke="#0B131B" stroke-width="2"/>
+    <circle cx="${rx}" cy="${ry}" r="6.5" fill="${g.shadowed?'#5A97E0':'#4FA36B'}" stroke="#0B131B" stroke-width="2"/>
+
+    ${dim(sx, ex, gy+26, sd.toFixed(0)+' m')}
+    ${dim(ex, rx, gy+26, rd.toFixed(0)+' m')}
+
+    <g font-family="IBM Plex Mono,monospace" font-size="11.5" fill="#9AA7B3">
+      <text x="${sx}" y="${sy-17}" text-anchor="middle">source · ${sh.toFixed(1)} m</text>
+      <text x="${rx}" y="${ry-17}" text-anchor="${rx>W-140?'end':'middle'}">receiver · ${rh.toFixed(1)} m</text>
+      <text x="${ex+13}" y="${ey-9}" fill="#C9D2DA">barrier ${h.toFixed(1)} m</text>
+      <text x="${ex+13}" y="${ey+26}" font-size="10.5" fill="#7E8D99">wedge ${P.ang.toFixed(0)}°</text>
+    </g>
+
+    <g font-family="IBM Plex Mono,monospace" font-size="10.5" fill="#5C6C7A">
+      <text x="${L-38}" y="${T-18}">vertical exaggeration &#215;${vex.toFixed(1)}</text>
+      <text x="${W-R+40}" y="${T-18}" text-anchor="end" fill="${g.shadowed?'#C08828':'#4FA36B'}">${g.shadowed?'receiver in shadow':'receiver in the clear'}</text>
+    </g>
   </svg>`;
 }
 
