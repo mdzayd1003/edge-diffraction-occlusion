@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Interactive UTD wedge-diffraction model: move the geometry, watch the third-octave insertion loss recompute in the browser.">
+<title>Barrier diffraction calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23101A24'/%3E%3Cpath d='M18 74 L50 26 L82 74' fill='none' stroke='%23C08828' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{--ground:#E8EAE6;--surface:#F2F4F0;--sunk:#DFE2DC;--ink:#16202A;--ink-2:#46525D;--ink-3:#6C7780;
+--rule:#CDD2CB;--rule-2:#B9BFB7;--brass:#B0771B;--brass-b:#8E5F13;--signal:#1361A8;--plot:#0D1620;
+--top:#101A24;--top-ink:#EDF0F2;--top-ink2:#A3B1BE;--top-ink3:#74848F;--top-rule:#26343F;
+--top-brass:#C08828;--top-sig:#5A97E0;
+--sans:"Archivo","Helvetica Neue",Arial,sans-serif;--serif:"Newsreader",Georgia,serif;
+--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;--gutter:clamp(18px,4vw,48px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--ground:#101A24;--surface:#16212C;
+--sunk:#0B131B;--ink:#E4E8EA;--ink-2:#A2B0BB;--ink-3:#74848F;--rule:#26343F;--rule-2:#33434F;
+--brass:#C08828;--brass-b:#D8A044;--signal:#5A97E0;--top:#0B131B;--top-rule:#22303B}}
+:root[data-theme=dark]{--ground:#101A24;--surface:#16212C;--sunk:#0B131B;--ink:#E4E8EA;--ink-2:#A2B0BB;
+--ink-3:#74848F;--rule:#26343F;--rule-2:#33434F;--brass:#C08828;--brass-b:#D8A044;--signal:#5A97E0;
+--top:#0B131B;--top-rule:#22303B}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--serif);font-size:16.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+img{max-width:100%;height:auto}
+h1,h2,h3{font-family:var(--sans);font-weight:600;font-stretch:112%;letter-spacing:-.012em;margin:0;text-wrap:balance}
+a{color:inherit;text-decoration-color:var(--rule-2);text-underline-offset:3px}
+a:hover{text-decoration-color:var(--brass)}
+:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+.wrap{max-width:1100px;margin-inline:auto;padding-inline:var(--gutter)}
+.top{background:var(--top);color:var(--top-ink);border-bottom:1px solid var(--top-rule)}
+.top .wrap{padding-block:clamp(24px,4vw,40px) clamp(20px,3vw,30px)}
+.top h1{font-size:clamp(1.6rem,4vw,2.5rem);margin-top:10px}
+.crumbs{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--top-ink3);display:flex;gap:8px;flex-wrap:wrap}
+.crumbs a{color:var(--top-ink2);text-decoration:none}
+.crumbs a:hover{color:var(--top-brass)}
+.sub{color:var(--top-ink2);max-width:62ch;margin:10px 0 0;font-size:1.02rem}
+main.wrap{padding-block:clamp(26px,4vw,44px) clamp(30px,5vw,56px)}
+.bot{background:var(--top);color:var(--top-ink2);border-top:1px solid var(--top-rule)}
+.bot .wrap{padding-block:26px;font-family:var(--mono);font-size:12px}
+.bot a{color:var(--top-ink)}
+.bot .note{color:var(--top-ink3);max-width:70ch;line-height:1.7;margin:0 0 12px}
+section{margin-bottom:clamp(28px,4vw,44px)}
+h2{font-size:clamp(1.15rem,2.4vw,1.45rem);margin-bottom:14px}
+.lead{color:var(--ink-2);max-width:70ch;margin:0 0 18px}
+.panel{border:1px solid var(--rule);background:var(--surface)}
+.eyebrow{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+.grid2{display:grid;grid-template-columns:280px minmax(0,1fr);gap:clamp(16px,3vw,28px);align-items:start}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(16px,3vw,28px);align-items:start}
+@media(max-width:760px){.two{grid-template-columns:1fr}}
+.controls{padding:18px 18px 20px;display:flex;flex-direction:column;gap:16px}
+.ctl label{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:11.5px;color:var(--ink-2);margin-bottom:6px}
+.ctl b{color:var(--brass-b);font-weight:600;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--brass);cursor:pointer}
+select,input[type=text]{width:100%;font-family:var(--mono);font-size:13px;padding:8px 10px;background:var(--ground);color:var(--ink);border:1px solid var(--rule-2);border-radius:0}
+textarea{width:100%;font-family:var(--mono);font-size:13.5px;line-height:1.6;padding:10px 12px;background:var(--ground);color:var(--ink);border:1px solid var(--rule-2);border-radius:0;resize:vertical}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin-bottom:14px}
+.readout div{background:var(--surface);padding:12px 14px}
+.readout .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.readout .v{font-family:var(--sans);font-size:1.32rem;font-weight:600;font-variant-numeric:tabular-nums;margin-top:3px}
+.readout .v.brass{color:var(--brass-b)}
+.plotbox{border:1px solid var(--top-rule);background:var(--plot);padding:8px}
+.plotbox svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:16px;font-family:var(--mono);font-size:11px;color:var(--ink-2);margin-bottom:8px;flex-wrap:wrap}
+.legend i{width:14px;height:3px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:middle}
+table{width:100%;border-collapse:collapse;font-size:14px}
+.scroll{overflow-x:auto;border:1px solid var(--rule)}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--rule);white-space:nowrap}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:500;background:var(--sunk)}
+td{font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+td.name{color:var(--ink);font-weight:500}
+tr:last-child td{border-bottom:none}
+.bar{height:8px;background:var(--brass);display:block;border-radius:1px}
+.bar.sig{background:var(--signal)}
+.tag{font-family:var(--mono);font-size:10.5px;padding:2px 7px;border:1px solid var(--rule-2);color:var(--ink-3)}
+.tag.on{border-color:var(--brass);color:var(--brass-b)}
+.note{font-family:var(--mono);font-size:11.5px;line-height:1.7;color:var(--ink-3);max-width:72ch}
+.note b{color:var(--brass-b);font-weight:600}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{font-family:var(--mono);font-size:11.5px;padding:6px 11px;border:1px solid var(--rule-2);background:var(--surface);color:var(--ink-2);cursor:pointer}
+.chip[aria-pressed=true]{border-color:var(--brass);color:var(--brass-b);background:var(--sunk)}
+mark{background:color-mix(in srgb,var(--brass) 26%,transparent);color:inherit;padding:1px 2px}
+mark.sig{background:color-mix(in srgb,var(--signal) 24%,transparent)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <nav class="crumbs">
+      <a href="https://mdzayd1003.github.io">Muhammad Zaid</a>
+      <span>/</span>
+      <a href="https://github.com/mdzayd1003/edge-diffraction-occlusion">edge-diffraction-occlusion</a>
+    </nav>
+    <h1>Barrier diffraction calculator</h1>
+    <p class="sub">Interactive UTD wedge-diffraction model: move the geometry, watch the third-octave insertion loss recompute in the browser.</p>
+  </div>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="lead">The wedge-diffraction model from this repository, running in your browser. Move a
+  slider and the third-octave insertion-loss spectrum recomputes — no server, no
+  precomputed lookup. Maekawa's empirical chart is drawn alongside as an independent
+  reference.</p>
+
+  <div class="readout">
+    <div><div class="k">A-weighted</div><div class="v brass" id="aw">—</div></div>
+    <div><div class="k">at 500 Hz</div><div class="v" id="il500">—</div></div>
+    <div><div class="k">path difference δ</div><div class="v" id="pd">—</div></div>
+    <div><div class="k">Fresnel N (500 Hz)</div><div class="v" id="n5">—</div></div>
+    <div><div class="k">mean vs Maekawa</div><div class="v" id="delta">—</div></div>
+    <div><div class="k">receiver</div><div class="v" id="state">—</div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel controls">
+      <div class="ctl"><label>Barrier height <b id="v_h">3.0 m</b></label>
+        <input type="range" id="r_h" min="1.5" max="8" step="0.1" value="3"></div>
+      <div class="ctl"><label>Source distance <b id="v_sd">5 m</b></label>
+        <input type="range" id="r_sd" min="2" max="30" step="1" value="5"></div>
+      <div class="ctl"><label>Receiver distance <b id="v_rd">10 m</b></label>
+        <input type="range" id="r_rd" min="2" max="100" step="1" value="10"></div>
+      <div class="ctl"><label>Source height <b id="v_sh">1.5 m</b></label>
+        <input type="range" id="r_sh" min="0.2" max="6" step="0.1" value="1.5"></div>
+      <div class="ctl"><label>Receiver height <b id="v_rh">1.5 m</b></label>
+        <input type="range" id="r_rh" min="0.2" max="6" step="0.1" value="1.5"></div>
+      <div class="ctl"><label>Wedge angle <b id="v_ang">360°</b></label>
+        <input type="range" id="r_ang" min="200" max="360" step="5" value="360"></div>
+      <div id="scene" class="plotbox" style="padding:4px"></div>
+      <p class="note" id="bad" hidden><b>Outside the wedge.</b> At this angle the receiver
+      would be inside the barrier. Raise the wedge angle or lower the receiver.</p>
+    </div>
+
+    <div>
+      <div class="legend">
+        <span><i style="background:#C08828"></i>UTD — this model</span>
+        <span><i style="background:#5A97E0"></i>Maekawa — empirical reference</span>
+      </div>
+      <div class="plotbox" id="chart"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Why the two curves should not coincide</h2>
+  <p class="lead">Maekawa's chart comes from measurements, not from this theory, so agreement
+  between them is evidence rather than circularity. UTD is known to sit slightly above it;
+  across the default geometry the gap is 1.4–1.7 dB over seven octaves. A model that matched
+  it exactly would be suspicious — it would mean one had been fitted to the other.</p>
+  <p class="note">Two checks you can make with the sliders. Raise the receiver until the readout
+  flips to <b>line of sight</b>: insertion loss collapses toward 0 dB, as it must once the
+  barrier stops blocking anything. And at the crossing point the field is exactly half the
+  free field — 6 dB — which falls out of the transition function rather than being fitted.</p>
+</section>
+<script>
+// UTD wedge diffraction, ported from diffraction/utd.py + geometry.py + bands.py.
+// Pure computation, no dependencies — the whole point is that it runs in a browser.
+const C0 = 343.0, TWO_PI = Math.PI * 2;
+
+// Fresnel integrals by composite Simpson. The integrand oscillates faster as x
+// grows, so the panel count grows with x rather than being fixed.
+function fresnel(x) {
+  if (x <= 0) return [0, 0];
+  let n = Math.max(200, Math.ceil(200 * x)); if (n % 2) n++;
+  const h = x / n; let S = 0, C = 0;
+  for (let i = 0; i <= n; i++) {
+    const t = i * h, w = (i === 0 || i === n) ? 1 : (i % 2 ? 4 : 2), a = Math.PI * t * t / 2;
+    S += w * Math.sin(a); C += w * Math.cos(a);
+  }
+  return [S * h / 3, C * h / 3];
+}
+
+// F(X) = 2j*sqrt(X)*exp(jX) * int_sqrt(X)^inf exp(-j t^2) dt  -> [re, im]
+function transition(X) {
+  if (X <= 0) return [0, 0];
+  const a = Math.sqrt(2 * X / Math.PI), [S, C] = fresnel(a), k = Math.sqrt(Math.PI / 2);
+  const tr = k * (0.5 - C), ti = -k * (0.5 - S);          // tail integral
+  const sx = Math.sqrt(X), cr = Math.cos(X), ci = Math.sin(X);
+  // 2j*sx * (cr + j ci) * (tr + j ti)
+  const pr = cr * tr - ci * ti, pi = cr * ti + ci * tr;
+  return [-2 * sx * pi, 2 * sx * pr];
+}
+
+function cotTimesF(beta, sgn, n, kL) {
+  const N = Math.round((beta + sgn * Math.PI) / (TWO_PI * n));
+  const a = 2 * Math.pow(Math.cos((TWO_PI * n * N - beta) / 2), 2);
+  const arg = (Math.PI + sgn * beta) / (2 * n), s = Math.sin(arg);
+  if (Math.abs(s) > 1e-6) {
+    const c = Math.cos(arg) / s, F = transition(kL * a);
+    return [c * F[0], c * F[1]];
+  }
+  // On a boundary cot diverges and F vanishes; use their finite product.
+  const eps = beta - (TWO_PI * n * N - sgn * Math.PI), dir = eps >= 0 ? 1 : -1;
+  const re = n * (Math.sqrt(TWO_PI * kL) * dir), im = -n * 2 * kL * eps * Math.SQRT1_2;
+  const br = re - n * 2 * kL * eps * Math.SQRT1_2, bi = im + 0;
+  // (br + j bi) * exp(j pi/4)
+  const r2 = Math.SQRT1_2;
+  return [(br - bi) * r2, (br + bi) * r2];
+}
+
+function geometry(srcX, srcZ, recX, recZ, openAngle, height) {
+  const half = (TWO_PI - openAngle) / 2;
+  const loc = (x, z) => {
+    const dx = x, dz = z - height;
+    return { r: Math.hypot(dx, dz), theta: ((Math.atan2(-dx, -dz) - half) % TWO_PI + TWO_PI) % TWO_PI };
+  };
+  const S = loc(srcX, srcZ), R = loc(recX, recZ);
+  const sPrime = S.r, s = R.r;                      // coplanar: apex offset is zero
+  return {
+    rS: S.r, rR: R.r, thetaS: S.theta, thetaR: R.theta, sPrime, s,
+    n: openAngle / Math.PI, beta0: Math.PI / 2,
+    shadowed: Math.abs(R.theta - S.theta) > Math.PI,
+    direct: Math.hypot(recX - srcX, recZ - srcZ),
+    inside: S.theta > openAngle + 1e-9 || R.theta > openAngle + 1e-9,
+  };
+}
+
+// |H| with the barrier, and |H| in free field, at one frequency.
+function response(g, f, c = C0) {
+  const k = TWO_PI * f / c, L = g.s * g.sPrime / (g.s + g.sPrime), kL = k * L;
+  let tr = 0, ti = 0;
+  for (const beta of [g.thetaR - g.thetaS, g.thetaR + g.thetaS])
+    for (const sgn of [1, -1]) { const t = cotTimesF(beta, sgn, g.n, kL); tr += t[0]; ti += t[1]; }
+  // D = -exp(-j pi/4)/(2 n sqrt(2 pi k)) * total
+  const pref = -1 / (2 * g.n * Math.sqrt(TWO_PI * k)), r2 = Math.SQRT1_2;
+  const er = r2, ei = -r2;                                   // exp(-j pi/4)
+  const Dr = pref * (er * tr - ei * ti), Di = pref * (er * ti + ei * tr);
+  const amp = 1 / Math.sqrt(g.s * g.sPrime * (g.s + g.sPrime));
+  const ph = -k * (g.s + g.sPrime), cr = Math.cos(ph), ci = Math.sin(ph);
+  let hr = amp * (Dr * cr - Di * ci), hi = amp * (Dr * ci + Di * cr);
+  if (!g.shadowed) { const p = -k * g.direct; hr += Math.cos(p) / g.direct; hi += Math.sin(p) / g.direct; }
+  return { barrier: hr * hr + hi * hi, free: 1 / (g.direct * g.direct) };
+}
+
+const CENTRES = [50,63,80,100,125,160,200,250,315,400,500,630,800,1000,1250,1600,2000,2500,3150,4000,5000,6300,8000,10000];
+
+function insertionLoss(g, centres = CENTRES, pts = 9) {
+  return centres.map(fc => {
+    const lo = fc / Math.pow(2, 1/6), hi = fc * Math.pow(2, 1/6);
+    const lf = [], b = [], fr = [];
+    for (let i = 0; i < pts; i++) {
+      const f = lo * Math.pow(hi / lo, i / (pts - 1)), r = response(g, f);
+      lf.push(Math.log(f)); b.push(r.barrier); fr.push(r.free);
+    }
+    const trap = y => { let s = 0; for (let i = 1; i < y.length; i++) s += (y[i] + y[i-1]) / 2 * (lf[i] - lf[i-1]); return s / (lf[lf.length-1] - lf[0]); };
+    return 10 * Math.log10(trap(fr) / Math.max(trap(b), 1e-30));
+  });
+}
+
+function pathDifference(g, srcX, srcZ, recX, recZ) { return g.sPrime + g.s - g.direct; }
+function maekawa(N) {
+  if (N > 0) { const a = Math.sqrt(TWO_PI * N); return 5 + 20 * Math.log10(a / Math.tanh(a)); }
+  if (N === 0) return 5;
+  const a = Math.sqrt(TWO_PI * Math.abs(N));
+  return a >= Math.PI / 2 ? 0 : Math.max(0, 5 - 20 * Math.log10(Math.tan(a) / a));
+}
+
+
+const $ = s => document.querySelector(s);
+const P = {h:3, sd:5, rd:10, sh:1.5, rh:1.5, ang:360};
+
+function fresnelN(g, f) {
+  const delta = g.sPrime + g.s - g.direct;
+  return (g.shadowed ? 1 : -1) * 2 * Math.abs(delta) * f / 343;
+}
+function aWeight(f){const f2=f*f;
+  const n=Math.pow(12194,2)*f2*f2;
+  const d=(f2+Math.pow(20.6,2))*Math.sqrt((f2+Math.pow(107.7,2))*(f2+Math.pow(737.9,2)))*(f2+Math.pow(12194,2));
+  return 20*Math.log10(n/d)+2.0;}
+
+function draw(il, mae, g) {
+  const W=760,H=330,X0=62,X1=724,Y0=24,Y1=272;
+  const lo=Math.log10(CENTRES[0]), hi=Math.log10(CENTRES[CENTRES.length-1]);
+  const top=Math.max(35, Math.ceil(Math.max(...il,...mae)/5)*5+5);
+  const x=f=>X0+(Math.log10(f)-lo)/(hi-lo)*(X1-X0), y=v=>Y1-Math.max(v,0)/top*(Y1-Y0);
+  const pts=a=>a.map((v,i)=>`${x(CENTRES[i]).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  let grid='', ylab='';
+  for(let v=0; v<=top; v+=Math.max(5,Math.round(top/6/5)*5)){
+    grid+=`<line x1="${X0}" y1="${y(v)}" x2="${X1}" y2="${y(v)}" stroke="#1B2836" stroke-width="1"/>`;
+    ylab+=`<text x="${X0-10}" y="${y(v)+4}">${v}</text>`;}
+  let xlab='';
+  for(const f of [63,125,250,500,1000,2000,4000,8000])
+    xlab+=`<text x="${x(f)}" y="${Y1+20}">${f>=1000?f/1000+'k':f}</text>`;
+  const band=`${pts(il)} ${il.map((_,i)=>i).reverse().map(i=>`${x(CENTRES[i]).toFixed(1)},${y(mae[i]).toFixed(1)}`).join(' ')}`;
+  const last=il.length-1;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Insertion loss against third-octave band frequency.">
+    ${grid}
+    <g font-family="IBM Plex Mono,monospace" font-size="12.5" fill="#7E8D99" text-anchor="end">${ylab}
+      <text x="${X0-10}" y="${Y0-8}" fill="#A3B1BE">dB</text></g>
+    <g font-family="IBM Plex Mono,monospace" font-size="12.5" fill="#7E8D99" text-anchor="middle">${xlab}
+      <text x="${(X0+X1)/2}" y="${Y1+40}" font-size="12" fill="#66757F">third-octave band centre (Hz)</text></g>
+    <polygon points="${band}" fill="#C08828" fill-opacity="0.13"/>
+    <polyline points="${pts(mae)}" fill="none" stroke="#5A97E0" stroke-width="2.4" stroke-linejoin="round"/>
+    <polyline points="${pts(il)}" fill="none" stroke="#C08828" stroke-width="2.4" stroke-linejoin="round"/>
+    <circle cx="${x(CENTRES[last])}" cy="${y(mae[last])}" r="4" fill="#5A97E0" stroke="#0D1620" stroke-width="2"/>
+    <circle cx="${x(CENTRES[last])}" cy="${y(il[last])}" r="4" fill="#C08828" stroke="#0D1620" stroke-width="2"/>
+  </svg>`;
+}
+
+function scene(g) {
+  const W=380,H=190,gy=150,bx=190;
+  const sc=Math.min(150/Math.max(P.sd,1), 150/Math.max(P.rd,1), 14);
+  const sx=bx-P.sd*sc, rx=bx+P.rd*sc;
+  const hy=gy-P.h*sc*1.6, szy=gy-P.sh*sc*1.6, rzy=gy-P.rh*sc*1.6;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const SX=clamp(sx,16,bx-8), RX=clamp(rx,bx+8,W-16);
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Side view of the source, barrier and receiver.">
+    <line x1="0" y1="${gy}" x2="${W}" y2="${gy}" stroke="#26343F" stroke-width="2"/>
+    <line x1="${bx}" y1="${gy}" x2="${bx}" y2="${clamp(hy,14,gy)}" stroke="#7E8D99" stroke-width="5" stroke-linecap="round"/>
+    <path d="M ${SX} ${szy} L ${bx} ${clamp(hy,14,gy)} L ${RX} ${rzy}" fill="none" stroke="#C08828" stroke-width="2" stroke-dasharray="5 4"/>
+    <line x1="${SX}" y1="${szy}" x2="${RX}" y2="${rzy}" stroke="${g.shadowed?'#3C4A57':'#5A97E0'}" stroke-width="1.5" stroke-dasharray="${g.shadowed?'2 4':'0'}"/>
+    <circle cx="${SX}" cy="${szy}" r="5" fill="#C08828"/><circle cx="${RX}" cy="${rzy}" r="5" fill="#5A97E0"/>
+    <g font-family="IBM Plex Mono,monospace" font-size="11" fill="#8A98A5">
+      <text x="${SX}" y="${szy-11}" text-anchor="middle">source</text>
+      <text x="${RX}" y="${rzy-11}" text-anchor="middle">receiver</text>
+      <text x="${bx+7}" y="${clamp(hy,20,gy)-6}">${P.h.toFixed(1)} m</text></g>
+  </svg>`;
+}
+
+function update() {
+  const g = geometry(-P.sd, P.sh, P.rd, P.rh, P.ang*Math.PI/180, P.h);
+  const bad = $('#bad');
+  if (g.inside) { bad.hidden=false; return; } else bad.hidden=true;
+  const il = insertionLoss(g);
+  const mae = CENTRES.map(f => maekawa(fresnelN(g, f)));
+  $('#chart').innerHTML = draw(il, mae, g);
+  $('#scene').innerHTML = scene(g);
+
+  const w = CENTRES.map(f => Math.pow(10, aWeight(f)/10));
+  const num = w.reduce((a,v,i)=>a+v,0), den = w.reduce((a,v,i)=>a+v*Math.pow(10,-il[i]/10),0);
+  $('#aw').textContent = (10*Math.log10(num/den)).toFixed(1);
+  $('#pd').textContent = (g.sPrime+g.s-g.direct).toFixed(3);
+  $('#n5').textContent = fresnelN(g, 500).toFixed(2);
+  $('#il500').textContent = il[10].toFixed(1);
+  const st = $('#state');
+  st.textContent = g.shadowed ? 'in shadow' : 'line of sight';
+  st.className = 'v ' + (g.shadowed ? 'brass' : '');
+  const worst = Math.max(...il.map((v,i)=>Math.abs(v-mae[i])));
+  $('#delta').textContent = '+' + (il.reduce((a,v,i)=>a+v-mae[i],0)/il.length).toFixed(2);
+}
+
+for (const [id, key, dp] of [['h','h',1],['sd','sd',0],['rd','rd',0],['sh','sh',1],['rh','rh',1],['ang','ang',0]]) {
+  const el = document.getElementById('r_'+id);
+  el.addEventListener('input', () => {
+    P[key] = parseFloat(el.value);
+    document.getElementById('v_'+id).textContent = P[key].toFixed(dp) + (key==='ang' ? '°' : ' m');
+    update();
+  });
+}
+update();
+
+</script>
+</main>
+<footer class="bot">
+  <div class="wrap">
+    <p class="note">The JavaScript here is a port of <code>diffraction/utd.py</code>. It was checked against the Python across six geometries and all 24 bands; the largest disagreement is 0.0013 dB.</p>
+    <p><a href="https://github.com/mdzayd1003/edge-diffraction-occlusion">Source on GitHub</a> ·
+       <a href="https://mdzayd1003.github.io">All projects</a></p>
+  </div>
+</footer>
+</body>
+</html>

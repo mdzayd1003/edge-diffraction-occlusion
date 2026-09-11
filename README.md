@@ -1,5 +1,7 @@
 # 06 — Parameter Study of Sound Occlusion via Edge Diffraction
 
+**[▶ Live demo](https://mdzayd1003.github.io/edge-diffraction-occlusion/)** — interactive results viewer, runs entirely in the browser.
+
 How much does a barrier actually block? A wedge-diffraction model, a 126-point
 parameter study, and an analysis that compares the predictions against listener
 ratings.
